@@ -1,21 +1,64 @@
 var FilterableProductTable = React.createClass({
+  getInitialState: function() {
+    return {
+      filterText: '',
+      inStockOnly: false
+    };
+
+  },
+
+  handleUserInput: function(filterText, inStockOnly) {
+    this.setState(
+      {
+        filterText: filterText,
+        inStockOnly: inStockOnly
+      }
+    );
+  },
+
   render: function() {
     return (
       <div className="FilterableProductTable">
-        <SearchBar />
-        <ProductTable products = {this.props.products} />
+        <SearchBar 
+          filterText={this.state.filterText}
+          inStockOnly={this.state.inStockOnly} 
+          onUserInput={this.handleUserInput}
+        />
+        <ProductTable
+          products={this.props.products}
+          filterText={this.state.filterText}
+          inStockOnly={this.state.inStockOnly}
+        />
       </div>
     )
   }
 });
 
 var SearchBar = React.createClass({
+  handleChange: function() {
+    this.props.onUserInput(
+      this.refs.filterTextInput.value,
+      this.refs.inStockOnlyInput.checked
+    );
+  },
+
   render: function() {
     return (
       <form className="searchBar">
-        <input type="text" placeholder="Search..." />
+        <input
+          type="text"
+          placeholder="Search..."
+          value={this.props.filterText}
+          ref="filterTextInput"
+          onChange={this.handleChange}
+        />
         <p>
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            checked={this.props.inStockOnly}
+            ref="inStockOnlyInput"
+            onChange={this.handleChange}
+          />
           {'  '}
           Only show prodocts in stock
         </p>
@@ -29,12 +72,15 @@ var ProductTable = React.createClass({
     var rows = [];
     var lastCategory = null;
     this.props.products.forEach(function(product) {
+      if((!product.stocked && this.props.inStockOnly) || product.name.indexOf(this.props.filterText) === -1) {
+        return;
+      }
       if (product.category !== lastCategory) {
         rows.push(<ProductCategoryRow category={product.category} />);
       }
       rows.push(<ProductRow product={product} />);
       lastCategory = product.category;
-    });
+    }.bind(this));
     return (
       <table className="ProductTable">
         <thead>
