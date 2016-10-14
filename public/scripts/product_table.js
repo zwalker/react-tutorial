@@ -3,7 +3,7 @@ var FilterableProductTable = React.createClass({
     return (
       <div className="FilterableProductTable">
         <SearchBar />
-        <ProductTable />
+        <ProductTable products = {this.props.products} />
       </div>
     )
   }
@@ -26,6 +26,15 @@ var SearchBar = React.createClass({
 
 var ProductTable = React.createClass({
   render: function() {
+    var rows = [];
+    var lastCategory = null;
+    this.props.products.forEach(function(product) {
+      if (product.category !== lastCategory) {
+        rows.push(<ProductCategoryRow category={product.category} />);
+      }
+      rows.push(<ProductRow product={product} />);
+      lastCategory = product.category;
+    });
     return (
       <table className="ProductTable">
         <thead>
@@ -35,8 +44,7 @@ var ProductTable = React.createClass({
           </tr>
         </thead>
         <tbody>
-          <ProductCategory />
-          <ProductRow />
+          {rows}
         </tbody>
       </table>
     )
@@ -44,26 +52,36 @@ var ProductTable = React.createClass({
 });
 
 
-var ProductCategory = React.createClass({
+var ProductCategoryRow = React.createClass({
   render: function() {
     return (
-      <tr>Sporting Goods</tr>
+      <tr><b>{this.props.category}</b></tr>
     )
   }
 });
 
 var ProductRow = React.createClass({
   render: function() {
+    var name = this.props.product.stocked ? this.props.product.name : <span style={{color: 'red'}}>{this.props.product.name}</span>;
     return (
       <tr>
-        <td>Football</td>
-        <td>$49.99</td>
+        <td>{name}</td>
+        <td>{this.props.product.price}</td>
       </tr>
     )
   }
 });
 
+var data = [
+  {category: "Sporting Goods", price: "$49.99", stocked: true, name: "Football"},
+  {category: "Sporting Goods", price: "$9.99", stocked: true, name: "Baseball"},
+  {category: "Sporting Goods", price: "$29.99", stocked: false, name: "Basketball"},
+  {category: "Electronics", price: "$99.99", stocked: true, name: "iPod Touch"},
+  {category: "Electronics", price: "$399.99", stocked: false, name: "iPhone 5"},
+  {category: "Electronics", price: "$199.99", stocked: true, name: "Nexus 7"}
+]
+
 ReactDOM.render(
-  <FilterableProductTable />,
+  <FilterableProductTable products={ data } />,
   document.getElementById('container')
 );
